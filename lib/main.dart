@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
           labelStyle: TextStyle(color: Colors.white),
         ),
       ),
-      home: WelcomePage(),
+      home: WelcomePage(),// first page that will appear to users
     );
   }
 }

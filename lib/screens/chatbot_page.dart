@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../api_config.dart'; // Contains baseUrl
+import '../api_config.dart'; // Contains baseUrl of backend
 
 class ChatbotPage extends StatefulWidget {
   const ChatbotPage({super.key});

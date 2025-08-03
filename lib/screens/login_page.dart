@@ -20,7 +20,7 @@ class _LoginPageState extends State<LoginPage> {
   bool isLoading = false;
 
   Future<void> loginUser() async {
-    final url = Uri.parse('$baseUrl/login');
+    final url = Uri.parse('$baseUrl/login');// backend call
 
     setState(() {
       isLoading = true;
@@ -29,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final response = await http.post(
         url,
-        headers: {'Content-Type': 'application/json'},
+        headers: {'Content-Type': 'application/json'},//http post request to confirm email, address
         body: json.encode({
           "email": emailController.text,
           "password": passwordController.text,
@@ -70,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF121212),  // Black background
+      backgroundColor: Color(0xFF121212),
       appBar: AppBar(
         title: const Text("Login"),
         backgroundColor: Colors.black,

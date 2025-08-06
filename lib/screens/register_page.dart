@@ -13,14 +13,49 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final nameController = TextEditingController();
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final confirmPasswordController = TextEditingController();
   bool isLoading = false;
 
-  Future<void> registerUser() async {
-    final url = Uri.parse('$baseUrl/register');
+  // Email Validation Function
+  bool _isValidEmail(String email) {
+    return RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$").hasMatch(email);
+  }
 
+  // Show Error Message
+  void showError(String msg) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg), backgroundColor: Colors.red),
+    );
+  }
+
+  // Registration Logic
+  Future<void> registerUser() async {
+    String email = emailController.text.trim();
+    String password = passwordController.text.trim();
+    String confirmPassword = confirmPasswordController.text.trim();
+
+    // Validate email
+    if (!_isValidEmail(email)) {
+      showError('Please enter a valid email');
+      return;
+    }
+
+    // Validate password length
+    if (password.length < 6) {
+      showError('Password must be at least 6 characters');
+      return;
+    }
+
+    // Check passwords match
+    if (password != confirmPassword) {
+      showError('Passwords do not match');
+      return;
+    }
+
+    // If all validations pass → Send to backend
+    final url = Uri.parse('$baseUrl/register');
     setState(() {
       isLoading = true;
     });
@@ -30,24 +65,22 @@ class _RegisterPageState extends State<RegisterPage> {
         url,
         headers: {'Content-Type': 'application/json'},
         body: json.encode({
-          "name": nameController.text,
-          "email": emailController.text,
-          "password": passwordController.text,
+          "email": email,
+          "password": password,
         }),
       );
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['success'] == true) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => LoginPage()),
-          );
-        } else {
-          showError(data['message'] ?? 'Registration failed');
-        }
+      final data = json.decode(response.body);
+      if (response.statusCode == 200 && data['success'] == true) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Registration successful!'), backgroundColor: Colors.green),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const LoginPage()),
+        );
       } else {
-        showError('Server error');
+        showError(data['message'] ?? 'Registration failed');
       }
     } catch (e) {
       showError('Network error');
@@ -58,19 +91,10 @@ class _RegisterPageState extends State<RegisterPage> {
     }
   }
 
-  void showError(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        backgroundColor: Colors.red,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF121212),
+      backgroundColor: Color(0xFF121212),
       appBar: AppBar(
         title: const Text("Register"),
         backgroundColor: Colors.black,
@@ -84,34 +108,17 @@ class _RegisterPageState extends State<RegisterPage> {
                 const Icon(Icons.person_add, size: 80, color: Colors.orange),
                 const SizedBox(height: 20),
                 TextField(
-                  controller: nameController,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: InputDecoration(
-                    labelText: "Name",
-                    labelStyle: const TextStyle(color: Colors.white70),
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.person, color: Colors.orange),
-                    enabledBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white24),
-                    ),
-                    focusedBorder: const OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.orange),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-                TextField(
                   controller: emailController,
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     labelText: "Email",
-                    labelStyle: const TextStyle(color: Colors.white70),
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.email, color: Colors.orange),
-                    enabledBorder: const OutlineInputBorder(
+                    labelStyle: TextStyle(color: Colors.white70),
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.email, color: Colors.orange),
+                    enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.white24),
                     ),
-                    focusedBorder: const OutlineInputBorder(
+                    focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.orange),
                     ),
                   ),
@@ -120,16 +127,34 @@ class _RegisterPageState extends State<RegisterPage> {
                 TextField(
                   controller: passwordController,
                   obscureText: true,
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     labelText: "Password",
-                    labelStyle: const TextStyle(color: Colors.white70),
-                    border: const OutlineInputBorder(),
-                    prefixIcon: const Icon(Icons.lock, color: Colors.orange),
-                    enabledBorder: const OutlineInputBorder(
+                    labelStyle: TextStyle(color: Colors.white70),
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.lock, color: Colors.orange),
+                    enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.white24),
                     ),
-                    focusedBorder: const OutlineInputBorder(
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.orange),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                TextField(
+                  controller: confirmPasswordController,
+                  obscureText: true,
+                  style: TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: "Confirm Password",
+                    labelStyle: TextStyle(color: Colors.white70),
+                    border: OutlineInputBorder(),
+                    prefixIcon: Icon(Icons.lock_outline, color: Colors.orange),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.white24),
+                    ),
+                    focusedBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Colors.orange),
                     ),
                   ),
@@ -154,8 +179,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text("Already have an account?",
-                        style: TextStyle(color: Colors.white70)),
+                    const Text("Already have an account?", style: TextStyle(color: Colors.white70)),
                     TextButton(
                       onPressed: () {
                         Navigator.pushReplacement(
@@ -163,10 +187,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           MaterialPageRoute(builder: (_) => const LoginPage()),
                         );
                       },
-                      child: const Text(
-                        "Login",
-                        style: TextStyle(color: Colors.orange),
-                      ),
+                      child: const Text("Login", style: TextStyle(color: Colors.orange)),
                     ),
                   ],
                 ),
